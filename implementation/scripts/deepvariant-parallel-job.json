@@ -1,0 +1,67 @@
+{
+    "taskGroups": [
+        {
+            "taskSpec": {
+                "runnables": [
+                    {
+                        "container": {
+                            "imageUri": "google/deepvariant:1.5.0-gpu",
+                            "commands": [
+                                "/bin/bash",
+                                "-c",
+                                "set -euxo pipefail && echo '=== Task ${BATCH_TASK_INDEX} starting ===' && pip install --quiet gsutil && echo '[Credentials]' > ~/.boto && echo 'gs_service_client_id = default' >> ~/.boto && echo '[GoogleCompute]' >> ~/.boto && echo 'service_account = default' >> ~/.boto && export BOTO_CONFIG=~/.boto && case ${BATCH_TASK_INDEX} in 0) REGIONS='1 2 3 4 5' ; REGION_NAME='chr1-5' ;; 1) REGIONS='6 7 8 9 10' ; REGION_NAME='chr6-10' ;; 2) REGIONS='11 12 13 14 15' ; REGION_NAME='chr11-15' ;; 3) REGIONS='16 17 18 19 20 21 22 X Y' ; REGION_NAME='chr16-Y' ;; esac && echo \"Processing $REGION_NAME (chromosomes: $REGIONS)\" && mkdir -p /tmp/dv/input /tmp/dv/output /tmp/dv/intermediate && echo '=== Downloading BAM ===' && gsutil -m cp gs://genomics-public-data/1000-genomes/bam/HG00119.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam /tmp/dv/input/sample.bam && echo '=== Creating BAM index ===' && samtools index -@ 8 /tmp/dv/input/sample.bam && echo '=== Downloading Reference ===' && gsutil -m cp gs://genomics-public-data/references/Homo_sapiens_assembly19_1000genomes_decoy/Homo_sapiens_assembly19_1000genomes_decoy.fasta /tmp/dv/input/reference.fasta && gsutil -m cp gs://genomics-public-data/references/Homo_sapiens_assembly19_1000genomes_decoy/Homo_sapiens_assembly19_1000genomes_decoy.fasta.fai /tmp/dv/input/reference.fasta.fai && echo '=== Disk space ===' && df -h /tmp && echo '=== Running DeepVariant for ${REGION_NAME} ===' && /opt/deepvariant/bin/run_deepvariant --model_type=WGS --ref=/tmp/dv/input/reference.fasta --reads=/tmp/dv/input/sample.bam --regions=\"$REGIONS\" --output_vcf=/tmp/dv/output/sample_${REGION_NAME}.vcf.gz --output_gvcf=/tmp/dv/output/sample_${REGION_NAME}.g.vcf.gz --num_shards=8 --intermediate_results_dir=/tmp/dv/intermediate && echo '=== Uploading results ===' && gsutil cp /tmp/dv/output/sample_${REGION_NAME}.vcf.gz gs://multiomnic-ref-results-dev/deepvariant-parallel/shards/ && gsutil cp /tmp/dv/output/sample_${REGION_NAME}.g.vcf.gz gs://multiomnic-ref-results-dev/deepvariant-parallel/shards/ && echo '=== Task ${BATCH_TASK_INDEX} (${REGION_NAME}) Complete ==='"
+                            ]
+                        }
+                    }
+                ],
+                "computeResource": {
+                    "cpuMilli": 8000,
+                    "memoryMib": 32000
+                },
+                "maxRetryCount": 1,
+                "maxRunDuration": "14400s"
+            },
+            "taskCount": 4,
+            "parallelism": 4
+        }
+    ],
+    "allocationPolicy": {
+        "instances": [
+            {
+                "policy": {
+                    "machineType": "n1-standard-8",
+                    "provisioningModel": "SPOT",
+                    "accelerators": [
+                        {
+                            "type": "nvidia-tesla-t4",
+                            "count": 1
+                        }
+                    ],
+                    "bootDisk": {
+                        "sizeGb": 200,
+                        "type": "pd-ssd"
+                    }
+                },
+                "installGpuDrivers": true
+            }
+        ],
+        "location": {
+            "allowedLocations": [
+                "zones/us-central1-a",
+                "zones/us-central1-b",
+                "zones/us-central1-c"
+            ]
+        },
+        "network": {
+            "networkInterfaces": [
+                {
+                    "network": "projects/multiomnic-ref/global/networks/multiomics-vpc",
+                    "subnetwork": "projects/multiomnic-ref/regions/us-central1/subnetworks/multiomics-vpc"
+                }
+            ]
+        }
+    },
+    "logsPolicy": {
+        "destination": "CLOUD_LOGGING"
+    }
+}

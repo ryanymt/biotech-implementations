@@ -1,0 +1,60 @@
+{
+    "taskGroups": [
+        {
+            "taskSpec": {
+                "runnables": [
+                    {
+                        "container": {
+                            "imageUri": "google/deepvariant:1.5.0-gpu",
+                            "commands": [
+                                "/bin/bash",
+                                "-c",
+                                "set -euxo pipefail && echo '=== VCF to TSV Extraction Job ===' && pip install --quiet gsutil && echo '[Credentials]' > ~/.boto && echo 'gs_service_client_id = default' >> ~/.boto && echo '[GoogleCompute]' >> ~/.boto && echo 'service_account = default' >> ~/.boto && export BOTO_CONFIG=~/.boto && mkdir -p /tmp/vcf2bq && echo '=== Downloading VCF ===' && gsutil cp gs://multiomnic-ref-results-dev/deepvariant-parallel/HG00119_final.vcf.gz /tmp/vcf2bq/ && echo '=== Extracting variant data with bcftools ===' && bcftools query -f '%CHROM\\t%POS\\t%ID\\t%REF\\t%ALT\\t%QUAL\\t%FILTER\\n' /tmp/vcf2bq/HG00119_final.vcf.gz > /tmp/vcf2bq/variants.tsv && echo '=== Adding header ===' && echo -e 'chromosome\\tposition\\tid\\tref\\talt\\tquality\\tfilter' > /tmp/vcf2bq/variants_with_header.tsv && cat /tmp/vcf2bq/variants.tsv >> /tmp/vcf2bq/variants_with_header.tsv && echo '=== Preview first 10 rows ===' && head -10 /tmp/vcf2bq/variants_with_header.tsv && echo '=== Row count ===' && wc -l /tmp/vcf2bq/variants_with_header.tsv && echo '=== Uploading TSV to GCS ===' && gsutil cp /tmp/vcf2bq/variants_with_header.tsv gs://multiomnic-ref-results-dev/deepvariant-parallel/variants_for_bq.tsv && echo '=== VCF to TSV Extraction Complete ===' && echo 'TSV file: gs://multiomnic-ref-results-dev/deepvariant-parallel/variants_for_bq.tsv' && echo 'Load to BigQuery with: bq load --source_format=CSV --field_delimiter=tab --skip_leading_rows=1 genomics_warehouse.deepvariant_variants gs://multiomnic-ref-results-dev/deepvariant-parallel/variants_for_bq.tsv'"
+                            ]
+                        }
+                    }
+                ],
+                "computeResource": {
+                    "cpuMilli": 4000,
+                    "memoryMib": 15000
+                },
+                "maxRetryCount": 1,
+                "maxRunDuration": "3600s"
+            },
+            "taskCount": 1,
+            "parallelism": 1
+        }
+    ],
+    "allocationPolicy": {
+        "instances": [
+            {
+                "policy": {
+                    "machineType": "n1-standard-4",
+                    "provisioningModel": "SPOT",
+                    "bootDisk": {
+                        "sizeGb": 50,
+                        "type": "pd-ssd"
+                    }
+                }
+            }
+        ],
+        "location": {
+            "allowedLocations": [
+                "zones/us-central1-a",
+                "zones/us-central1-b",
+                "zones/us-central1-c"
+            ]
+        },
+        "network": {
+            "networkInterfaces": [
+                {
+                    "network": "projects/multiomnic-ref/global/networks/multiomics-vpc",
+                    "subnetwork": "projects/multiomnic-ref/regions/us-central1/subnetworks/multiomics-vpc"
+                }
+            ]
+        }
+    },
+    "logsPolicy": {
+        "destination": "CLOUD_LOGGING"
+    }
+}

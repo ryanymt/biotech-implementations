@@ -1,0 +1,60 @@
+{
+    "taskGroups": [
+        {
+            "taskSpec": {
+                "runnables": [
+                    {
+                        "container": {
+                            "imageUri": "google/deepvariant:1.5.0-gpu",
+                            "commands": [
+                                "/bin/bash",
+                                "-c",
+                                "set -euxo pipefail && echo '=== VCF Merge Job ===' && pip install --quiet gsutil && echo '[Credentials]' > ~/.boto && echo 'gs_service_client_id = default' >> ~/.boto && echo '[GoogleCompute]' >> ~/.boto && echo 'service_account = default' >> ~/.boto && export BOTO_CONFIG=~/.boto && mkdir -p /tmp/merge && echo '=== Downloading VCF shards ===' && gsutil -m cp gs://multiomnic-ref-results-dev/deepvariant-parallel/shards/*.vcf.gz /tmp/merge/ && echo '=== Downloaded files ===' && ls -la /tmp/merge/ && echo '=== Merging VCFs with bcftools ===' && bcftools concat /tmp/merge/sample_chr1-5.vcf.gz /tmp/merge/sample_chr6-10.vcf.gz /tmp/merge/sample_chr11-15.vcf.gz /tmp/merge/sample_chr16-Y.vcf.gz -O z -o /tmp/merge/HG00119_merged.vcf.gz && echo '=== Indexing merged VCF ===' && bcftools index -t /tmp/merge/HG00119_merged.vcf.gz && echo '=== Merged VCF size ===' && ls -lh /tmp/merge/HG00119_merged.vcf.gz && echo '=== Uploading merged VCF ===' && gsutil cp /tmp/merge/HG00119_merged.vcf.gz gs://multiomnic-ref-results-dev/deepvariant-parallel/HG00119_final.vcf.gz && gsutil cp /tmp/merge/HG00119_merged.vcf.gz.tbi gs://multiomnic-ref-results-dev/deepvariant-parallel/HG00119_final.vcf.gz.tbi && echo '=== Merge Complete ===' && echo 'Output: gs://multiomnic-ref-results-dev/deepvariant-parallel/HG00119_final.vcf.gz'"
+                            ]
+                        }
+                    }
+                ],
+                "computeResource": {
+                    "cpuMilli": 4000,
+                    "memoryMib": 15000
+                },
+                "maxRetryCount": 1,
+                "maxRunDuration": "3600s"
+            },
+            "taskCount": 1,
+            "parallelism": 1
+        }
+    ],
+    "allocationPolicy": {
+        "instances": [
+            {
+                "policy": {
+                    "machineType": "n1-standard-4",
+                    "provisioningModel": "SPOT",
+                    "bootDisk": {
+                        "sizeGb": 50,
+                        "type": "pd-ssd"
+                    }
+                }
+            }
+        ],
+        "location": {
+            "allowedLocations": [
+                "zones/us-central1-a",
+                "zones/us-central1-b",
+                "zones/us-central1-c"
+            ]
+        },
+        "network": {
+            "networkInterfaces": [
+                {
+                    "network": "projects/multiomnic-ref/global/networks/multiomics-vpc",
+                    "subnetwork": "projects/multiomnic-ref/regions/us-central1/subnetworks/multiomics-vpc"
+                }
+            ]
+        }
+    },
+    "logsPolicy": {
+        "destination": "CLOUD_LOGGING"
+    }
+}

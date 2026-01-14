@@ -1,0 +1,28 @@
+# Python dependencies for Cloud-Native Multiomics Platform
+
+# Google Cloud SDKs
+google-cloud-storage>=2.10.0
+google-cloud-bigquery>=3.11.0
+google-cloud-batch>=0.17.0
+google-cloud-aiplatform>=1.38.0
+google-cloud-dataflow>=2.0.0
+
+# Pipeline utilities
+nextflow>=23.0.0  # Install via curl: curl -s https://get.nextflow.io | bash
+
+# Data processing
+pandas>=2.0.0
+pyarrow>=14.0.0
+
+# Bioinformatics
+biopython>=1.81
+
+# CLI and configuration
+click>=8.1.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+
+# Development
+pytest>=7.4.0
+black>=23.0.0
+ruff>=0.1.0
