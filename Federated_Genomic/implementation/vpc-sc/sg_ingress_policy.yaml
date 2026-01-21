@@ -1,0 +1,16 @@
+# Allow ingress to SG hub from US and EU nodes for weight uploads
+- ingressFrom:
+    sources:
+      - resource: "projects/1016175955970"
+      - resource: "projects/241427950872"
+    identityType: ANY_SERVICE_ACCOUNT
+  ingressTo:
+    resources:
+      - "*"
+    operations:
+      - serviceName: "storage.googleapis.com"
+        methodSelectors:
+          - method: "*"
+      - serviceName: "pubsub.googleapis.com"
+        methodSelectors:
+          - method: "*"

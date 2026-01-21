@@ -1,0 +1,82 @@
+{
+    "taskGroups": [
+        {
+            "taskSpec": {
+                "runnables": [
+                    {
+                        "container": {
+                            "imageUri": "us-central1-docker.pkg.dev/multiomnic-ref/genomics-containers/gcp-variant-transforms:latest",
+                            "commands": [
+                                "/opt/gcp_variant_transforms/bin/vcf_to_bq",
+                                "--project",
+                                "multiomnic-ref",
+                                "--input_pattern",
+                                "gs://multiomnic-ref-results-dev/deepvariant-parallel/HG00119_final.vcf.gz",
+                                "--output_table",
+                                "multiomnic-ref:genomics_warehouse.deepvariant_variants",
+                                "--temp_location",
+                                "gs://multiomnic-ref-staging-dev/variant-transforms-temp",
+                                "--job_name",
+                                "vcf-to-bq-deepvariant",
+                                "--runner",
+                                "DataflowRunner",
+                                "--region",
+                                "us-central1",
+                                "--worker_machine_type",
+                                "n1-standard-4",
+                                "--max_num_workers",
+                                "5",
+                                "--sample_name_encoding",
+                                "WITHOUT_FILE_PATH",
+                                "--sdk_container_image",
+                                "us-central1-docker.pkg.dev/multiomnic-ref/genomics-containers/gcp-variant-transforms:latest",
+                                "--experiments",
+                                "use_runner_v2"
+                            ]
+                        }
+                    }
+                ],
+                "computeResource": {
+                    "cpuMilli": 2000,
+                    "memoryMib": 7000
+                },
+                "maxRetryCount": 1,
+                "maxRunDuration": "7200s"
+            },
+            "taskCount": 1,
+            "parallelism": 1
+        }
+    ],
+    "allocationPolicy": {
+        "instances": [
+            {
+                "policy": {
+                    "machineType": "n1-standard-2",
+                    "provisioningModel": "SPOT",
+                    "bootDisk": {
+                        "sizeGb": 50,
+                        "type": "pd-ssd"
+                    }
+                }
+            }
+        ],
+        "location": {
+            "allowedLocations": [
+                "zones/us-central1-a",
+                "zones/us-central1-b",
+                "zones/us-central1-c"
+            ]
+        },
+        "network": {
+            "networkInterfaces": [
+                {
+                    "network": "projects/multiomnic-ref/global/networks/multiomics-vpc",
+                    "subnetwork": "projects/multiomnic-ref/regions/us-central1/subnetworks/multiomics-vpc"
+                }
+            ]
+        }
+    },
+    "logsPolicy": {
+        "destination": "CLOUD_LOGGING"
+    }
+}

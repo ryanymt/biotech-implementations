@@ -1,0 +1,62 @@
+{
+    "taskGroups": [
+        {
+            "taskSpec": {
+                "runnables": [
+                    {
+                        "container": {
+                            "imageUri": "us-central1-docker.pkg.dev/multiomnic-ref/genomics-containers/tff-train:v3",
+                            "commands": [
+                                "python",
+                                "/app/train_node.py"
+                            ]
+                        },
+                        "environment": {
+                            "variables": {
+                                "PROJECT_ID": "multiomnic-ref",
+                                "NODE_ID": "SG",
+                                "DATASET": "hospital_data",
+                                "TABLE": "patient_genomic_data",
+                                "WEIGHTS_BUCKET": "fedgen-weights"
+                            }
+                        }
+                    }
+                ],
+                "computeResource": {
+                    "cpuMilli": 2000,
+                    "memoryMib": 4096
+                },
+                "maxRunDuration": "600s",
+                "maxRetryCount": 1
+            },
+            "taskCount": 1
+        }
+    ],
+    "allocationPolicy": {
+        "instances": [
+            {
+                "policy": {
+                    "machineType": "e2-standard-2",
+                    "provisioningModel": "STANDARD"
+                }
+            }
+        ],
+        "location": {
+            "allowedLocations": [
+                "regions/us-central1"
+            ]
+        },
+        "network": {
+            "networkInterfaces": [
+                {
+                    "network": "projects/multiomnic-ref/global/networks/multiomics-vpc",
+                    "subnetwork": "projects/multiomnic-ref/regions/us-central1/subnetworks/multiomics-vpc",
+                    "noExternalIpAddress": false
+                }
+            ]
+        }
+    },
+    "logsPolicy": {
+        "destination": "CLOUD_LOGGING"
+    }
+}

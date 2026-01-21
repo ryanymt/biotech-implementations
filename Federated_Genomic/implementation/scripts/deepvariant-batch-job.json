@@ -1,0 +1,67 @@
+{
+    "taskGroups": [
+        {
+            "taskSpec": {
+                "runnables": [
+                    {
+                        "container": {
+                            "imageUri": "google/deepvariant:1.5.0-gpu",
+                            "commands": [
+                                "/bin/bash",
+                                "-c",
+                                "set -euxo pipefail && echo '=== Installing gsutil via pip ===' && pip install --quiet gsutil && echo '=== Configuring gsutil to use service account ===' && mkdir -p ~/.config/gcloud && curl -s -H 'Metadata-Flavor: Google' http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token > /tmp/token.json && cat /tmp/token.json && echo '' && echo '=== Set BOTO config for GCE auth ===' && echo '[Credentials]' > ~/.boto && echo 'gs_service_client_id = default' >> ~/.boto && echo '[Boto]' >> ~/.boto && echo 'https_validate_certificates = True' >> ~/.boto && echo '[GoogleCompute]' >> ~/.boto && echo 'service_account = default' >> ~/.boto && export BOTO_CONFIG=~/.boto && cat ~/.boto && echo '=== gsutil configured ===' && gsutil version -l && echo '=== Creating work directories ===' && mkdir -p /tmp/deepvariant/input /tmp/deepvariant/output /tmp/deepvariant/intermediate && echo '=== Downloading BAM ===' && gsutil -m cp gs://genomics-public-data/1000-genomes/bam/HG00119.mapped.ILLUMINA.bwa.GBR.low_coverage.20120522.bam /tmp/deepvariant/input/sample.bam && echo '=== Creating BAM index ===' && samtools index -@ 32 /tmp/deepvariant/input/sample.bam && echo '=== Downloading Reference (Assembly 19 1000 Genomes Decoy) ===' && gsutil -m cp gs://genomics-public-data/references/Homo_sapiens_assembly19_1000genomes_decoy/Homo_sapiens_assembly19_1000genomes_decoy.fasta /tmp/deepvariant/input/reference.fasta && echo '=== Downloading Reference Index ===' && gsutil -m cp gs://genomics-public-data/references/Homo_sapiens_assembly19_1000genomes_decoy/Homo_sapiens_assembly19_1000genomes_decoy.fasta.fai /tmp/deepvariant/input/reference.fasta.fai && echo '=== Disk space ===' && df -h /tmp && ls -la /tmp/deepvariant/input/ && echo '=== Running DeepVariant ===' && /opt/deepvariant/bin/run_deepvariant --model_type=WGS --ref=/tmp/deepvariant/input/reference.fasta --reads=/tmp/deepvariant/input/sample.bam --output_vcf=/tmp/deepvariant/output/sample.vcf.gz --output_gvcf=/tmp/deepvariant/output/sample.g.vcf.gz --num_shards=32 --intermediate_results_dir=/tmp/deepvariant/intermediate && echo '=== Verifying output files ===' && ls -la /tmp/deepvariant/output/ && echo '=== Uploading Results ===' && gsutil cp /tmp/deepvariant/output/sample.vcf.gz gs://multiomnic-ref-results-dev/deepvariant/HG00119_v12.vcf.gz && gsutil cp /tmp/deepvariant/output/sample.g.vcf.gz gs://multiomnic-ref-results-dev/deepvariant/HG00119_v12.g.vcf.gz && echo '=== DeepVariant Complete ==='"
+                            ]
+                        }
+                    }
+                ],
+                "computeResource": {
+                    "cpuMilli": 32000,
+                    "memoryMib": 128000
+                },
+                "maxRetryCount": 1,
+                "maxRunDuration": "28800s"
+            },
+            "taskCount": 1,
+            "parallelism": 1
+        }
+    ],
+    "allocationPolicy": {
+        "instances": [
+            {
+                "policy": {
+                    "machineType": "n1-standard-32",
+                    "provisioningModel": "SPOT",
+                    "accelerators": [
+                        {
+                            "type": "nvidia-tesla-t4",
+                            "count": 1
+                        }
+                    ],
+                    "bootDisk": {
+                        "sizeGb": 200,
+                        "type": "pd-ssd"
+                    }
+                },
+                "installGpuDrivers": true
+            }
+        ],
+        "location": {
+            "allowedLocations": [
+                "zones/us-central1-a",
+                "zones/us-central1-b",
+                "zones/us-central1-c"
+            ]
+        },
+        "network": {
+            "networkInterfaces": [
+                {
+                    "network": "projects/multiomnic-ref/global/networks/multiomics-vpc",
+                    "subnetwork": "projects/multiomnic-ref/regions/us-central1/subnetworks/multiomics-vpc"
+                }
+            ]
+        }
+    },
+    "logsPolicy": {
+        "destination": "CLOUD_LOGGING"
+    }
+}

@@ -1,0 +1,65 @@
+{
+    "taskGroups": [
+        {
+            "taskSpec": {
+                "runnables": [
+                    {
+                        "container": {
+                            "imageUri": "us-central1-docker.pkg.dev/multiomnic-ref/genomics-containers/tff-train:v3",
+                            "commands": [
+                                "python",
+                                "/app/train_node.py"
+                            ]
+                        },
+                        "environment": {
+                            "variables": {
+                                "PROJECT_ID": "fedgen-node-eu",
+                                "NODE_ID": "EU",
+                                "DATASET": "hospital_data",
+                                "TABLE": "patient_genomic_data",
+                                "WEIGHTS_BUCKET": "fedgen-weights"
+                            }
+                        }
+                    }
+                ],
+                "computeResource": {
+                    "cpuMilli": 2000,
+                    "memoryMib": 4096
+                },
+                "maxRunDuration": "600s",
+                "maxRetryCount": 1
+            },
+            "taskCount": 1
+        }
+    ],
+    "allocationPolicy": {
+        "instances": [
+            {
+                "policy": {
+                    "machineType": "e2-standard-2",
+                    "provisioningModel": "STANDARD"
+                }
+            }
+        ],
+        "location": {
+            "allowedLocations": [
+                "regions/europe-west2"
+            ]
+        },
+        "network": {
+            "networkInterfaces": [
+                {
+                    "network": "projects/fedgen-node-eu/global/networks/fedgen-eu-vpc",
+                    "subnetwork": "projects/fedgen-node-eu/regions/europe-west2/subnetworks/fedgen-eu-subnet",
+                    "noExternalIpAddress": false
+                }
+            ]
+        },
+        "serviceAccount": {
+            "email": "batch-runner@fedgen-node-eu.iam.gserviceaccount.com"
+        }
+    },
+    "logsPolicy": {
+        "destination": "CLOUD_LOGGING"
+    }
+}

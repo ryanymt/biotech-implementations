@@ -1,0 +1,60 @@
+{
+  "taskGroups": [
+    {
+      "taskSpec": {
+        "runnables": [
+          {
+            "container": {
+              "imageUri": "us-central1-docker.pkg.dev/fedgen-node-us/genomics/vcf-processor:v1",
+              "commands": [
+                "/bin/bash",
+                "-c",
+                "bcftools norm -m -any ${INPUT_VCF} -o /tmp/normalized.vcf && python /app/load_to_bq.py /tmp/normalized.vcf"
+              ]
+            }
+          }
+        ],
+        "computeResource": {
+          "cpuMilli": 4000,
+          "memoryMib": 8192
+        },
+        "maxRunDuration": "3600s",
+        "maxRetryCount": 3
+      },
+      "taskCount": 50,
+      "parallelism": 50,
+      "taskCountPerNode": 1
+    }
+  ],
+  "allocationPolicy": {
+    "instances": [
+      {
+        "policy": {
+          "machineType": "n2d-standard-4",
+          "provisioningModel": "SPOT"
+        },
+        "installGpuDrivers": false
+      }
+    ],
+    "location": {
+      "allowedLocations": [
+        "regions/us-central1"
+      ]
+    },
+    "network": {
+      "networkInterfaces": [
+        {
+          "network": "projects/fedgen-node-us/global/networks/fedgen-us-vpc",
+          "subnetwork": "projects/fedgen-node-us/regions/us-central1/subnetworks/fedgen-us-subnet",
+          "noExternalIpAddress": true
+        }
+      ]
+    },
+    "serviceAccount": {
+      "email": "batch-runner@fedgen-node-us.iam.gserviceaccount.com"
+    }
+  },
+  "logsPolicy": {
+    "destination": "CLOUD_LOGGING"
+  }
+}

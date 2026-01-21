@@ -1,0 +1,16 @@
+# Allow egress from EU perimeter to SG hub for weight uploads
+- egressFrom:
+    identityType: ANY_SERVICE_ACCOUNT
+    sourceRestriction: SOURCE_RESTRICTION_ENABLED
+    sources:
+      - resource: "projects/241427950872"
+  egressTo:
+    resources:
+      - "projects/260208715038"
+    operations:
+      - serviceName: "storage.googleapis.com"
+        methodSelectors:
+          - method: "*"
+      - serviceName: "pubsub.googleapis.com"
+        methodSelectors:
+          - method: "*"
