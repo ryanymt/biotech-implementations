@@ -16,5 +16,5 @@ A privacy-preserving architecture that connects multiple "Sovereign Nodes" (buil
 
 Read the two-part blog series detailing the vision and implementation of these projects:
 
-*   **[Part 1: From Files to Insights]([./part_1.md](https://medium.com/@ongoing.ymt/unlocking-the-genome-from-files-to-insights-bbcb5344f333))** – How we modernized the single lab (The Multiomics Project).
-*   **Part 2: Collaboration Without Compromise** – How we connected the labs globally (The Federated Project).
+*   **[Part 1: From Files to Insights](https://medium.com/@ongoing.ymt/unlocking-the-genome-from-files-to-insights-bbcb5344f333)** – How we modernized the single lab (The Multiomics Project).
+*   **[Part 2: Collaboration Without Compromise](https://medium.com/@ongoing.ymt/unlocking-the-genome-part-2-collaboration-without-compromise-c254b5530ed5) – How we connected the labs globally (The Federated Project).
