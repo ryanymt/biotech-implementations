@@ -111,5 +111,3 @@ Detailed guides for each component can be found in `implementation/docs/`:
 ## 🤝 Contribution
 This is a reference implementation. We welcome pull requests to improve pipelines, add new modules (e.g., RNA-seq), or optimize costs.
 
-## 📄 License
-[Apache 2.0](LICENSE) - Built with ❤️ on Google Cloud.
