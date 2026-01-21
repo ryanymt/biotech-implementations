@@ -24,6 +24,15 @@ bash src/tff/demo_federated.sh
 
 ✓ Data NEVER left sovereign nodes
 ```
+---
+## Documentation
+**Platform Overview** is recommended to read, to have understanding on what we have here. 
+
+| Document | Description |
+|----------|-------------|
+| 📖 [Platform Overview](./PLATFORM_OVERVIEW.md) | Full story, constraints, production roadmap |
+| 📚 [Implementation Docs](./implementation_docs/) | Phase-by-phase technical guides |
+| 🔬 [Multiomnic Reference](./implementation/) | DeepVariant pipeline & BigQuery schemas |
 
 ---
 
@@ -54,15 +63,6 @@ bash src/tff/demo_federated.sh
 | **Federated Learning** | Only model weights exchanged, never data |
 | **Real Genomics** | 3.49M DeepVariant variants included |
 
----
-
-## Documentation
-
-| Document | Description |
-|----------|-------------|
-| 📖 [Platform Overview](./PLATFORM_OVERVIEW.md) | Full story, constraints, production roadmap |
-| 📚 [Implementation Docs](./implementation_docs/) | Phase-by-phase technical guides |
-| 🔬 [Multiomnic Reference](./implementation/) | DeepVariant pipeline & BigQuery schemas |
 
 ---
 
